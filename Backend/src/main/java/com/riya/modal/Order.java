@@ -1,0 +1,35 @@
+package com.riya.modal;
+
+import com.riya.domain.OrderStatus;
+import com.riya.domain.OrderType;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@Entity
+public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @ManyToOne
+    private User user;
+
+    @Column(nullable = false)
+    private OrderType orderType;
+
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    private LocalDateTime timestamp=LocalDateTime.now();
+
+    @Column(nullable = false)
+    private OrderStatus orderStatus;
+
+    @OneToOne(mappedBy = "order",cascade = CascadeType.ALL)
+    private OrderItem orderItem;
+}
