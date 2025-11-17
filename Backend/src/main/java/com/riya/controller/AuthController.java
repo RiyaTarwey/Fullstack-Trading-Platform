@@ -9,6 +9,7 @@ import com.riya.response.AuthResponse;
 import com.riya.service.CustomUserDetailsService;
 import com.riya.service.EmailService;
 import com.riya.service.TwoFactorOtpService;
+import com.riya.service.WatchlistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -31,38 +33,47 @@ public class AuthController {
     private TwoFactorOtpService twoFactorOtpService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private WatchlistService watchlistService;
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> register(@RequestBody User user) {
 
+        User isEmailExists = userRepository.findByEmail(user.getEmail());
+        if (isEmailExists != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already used with another account");
+        }
 
-    User isEmailExists = userRepository.findByEmail(user.getEmail());
-    if (isEmailExists != null) {
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already used with another account");
-    }
-        User newUser= new User();
-        newUser.setEmail(user.getEmail());
-        newUser.setPassword(user.getPassword());
-        newUser.setEmail(user.getEmail());
+        User newUser = new User();
+
         newUser.setFullName(user.getFullName());
+        newUser.setEmail(user.getEmail());
+        newUser.setPassword(
+                NoOpPasswordEncoder.getInstance().encode(user.getPassword())
+        );
 
-    User savedUser=userRepository.save(newUser);
-        Authentication auth=new UsernamePasswordAuthenticationToken(
+
+        // role and twoFactorAuth automatically set by entity defaults
+
+        User savedUser = userRepository.save(newUser);
+        watchlistService.createWatchList(savedUser);
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
                 user.getEmail(),
                 user.getPassword()
         );
 
         SecurityContextHolder.getContext().setAuthentication(auth);
 
+        String jwt = JwtProvider.generateToken(auth);
 
-String jwt= JwtProvider.generateToken(auth);
+        AuthResponse res = new AuthResponse();
+        res.setJwt(jwt);
+        res.setStatus(true);
+        res.setMessage("register success");
 
-AuthResponse res=new AuthResponse();
-res.setJwt(jwt);
-res.setStatus(true);
-res.setMessage("register success");
-
-    return new ResponseEntity<>(res, HttpStatus.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
+
 
 
     @PostMapping("/signin")

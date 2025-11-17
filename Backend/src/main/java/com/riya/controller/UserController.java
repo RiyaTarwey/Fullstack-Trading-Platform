@@ -35,13 +35,25 @@ public class UserController {
     private EmailService emailService;
 
     @GetMapping("/api/users/profile")
-    public ResponseEntity<String> getUserProfileHandler(@RequestHeader("Authorization") String jwt) throws Exception  {
+    public ResponseEntity<User> getUserProfile(@RequestHeader("Authorization") String jwt)  {
 
         User user = userService.findUserProfileByJwt(jwt);
-        user.setPassword(null);
 
-        return new ResponseEntity<>("verification otp sent Successfully", HttpStatus.OK);
+        return new ResponseEntity<User>(user, HttpStatus.OK);
     }
+
+
+
+
+
+//    @GetMapping("/api/users/profile")
+//    public ResponseEntity<String> getUserProfileHandler(@RequestHeader("Authorization") String jwt) throws Exception  {
+//
+//        User user = userService.findUserProfileByJwt(jwt);
+//        user.setPassword(null);
+//
+//        return new ResponseEntity<>("verification otp sent Successfully", HttpStatus.OK);
+//    }
 
     @PostMapping("/api/users/verification/{verificationType}/send-otp")
     public ResponseEntity<User> sendVerificationOtp(

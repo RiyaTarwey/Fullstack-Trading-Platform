@@ -1,11 +1,8 @@
 package com.riya.controller;
 
-import com.riya.modal.Order;
-import com.riya.modal.User;
-import com.riya.modal.Wallet;
-import com.riya.modal.WalletTransaction;
-import com.riya.service.UserService;
-import com.riya.service.WalletService;
+import com.riya.modal.*;
+import com.riya.response.PaymentResponse;
+import com.riya.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -13,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/wallet")
 public class WalletController {
 
     @Autowired
@@ -22,8 +18,14 @@ public class WalletController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private PaymentService paymentService;
+
     @GetMapping("/api/wallet")
-    public ResponseEntity<Wallet> getUserWallet(@RequestParam ("Authorization") String jwt) {
+    public ResponseEntity<Wallet> getUserWallet(@RequestHeader ("Authorization") String jwt) {
         User user = userService.findUserProfileByJwt(jwt);
 
         Wallet wallet = walletService.getUserWallet(user);
@@ -59,4 +61,28 @@ public class WalletController {
 
         return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
     }
+
+    @PutMapping("/api/wallet/order/deposit")
+    public ResponseEntity<Wallet> addBalanceToWallet(
+            @RequestHeader("Authorization") String jwt,
+            @RequestParam(name="order_id")Long orderId,
+            @RequestParam(name="Payment_id") String paymentId)
+            throws Exception {
+        User user = userService.findUserProfileByJwt(jwt);
+
+
+
+        Wallet wallet = walletService.getUserWallet(user);
+
+        PaymentOrder order = paymentService.getPaymentOrderById(orderId);
+
+        Boolean status=paymentService.ProccedPaymentOrder(order,paymentId);
+
+        if(status){
+            wallet=walletService.addBalance(wallet,order.getAmount());
+        }
+
+        return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
+    }
+
 }
