@@ -36,7 +36,7 @@ public class PaymentController {
         PaymentOrder order= paymentService.createOrder(user, amount,paymentMethod);
 
         if(paymentMethod.equals(PaymentMethod.RAZORPAY)){
-            paymentResponse=paymentService.createRazorPaymentLing(user,amount);
+            paymentResponse=paymentService.createRazorPaymentLing(user,amount, order.getId());
         }
         else{
             paymentResponse=paymentService.createStripePaymentLing(user,amount, order.getId());
