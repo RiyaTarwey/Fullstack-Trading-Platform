@@ -5,8 +5,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { VerifiedIcon } from "lucide-react";
 import React from "react";
 import AccountVarificationForm from "./AccountVarificationForm";
+import { useSelector } from "react-redux";
+import { store } from "@/State/Store";
+import Auth from "../Auth/Auth";
 
 const Profile = () => {
+
+  const {auth}=useSelector(store => store)
+
   const handleEnableTwoStepVerification=()=>{
     console.log("two step Verification ")
   }
@@ -23,11 +29,11 @@ const Profile = () => {
               <div className="space-y-7">
                 <div className="flex">
                   <p className="w-[9rem]">Email :</p>
-                  <p className="text-gray-700">example123@gmail.com</p>
+                  <p className="text-gray-700">{auth.user?.email}</p>
                 </div>
                 <div className="flex">
                   <p className="w-[9rem]">Full Name :</p>
-                  <p className="text-gray-700">Riya Kumari</p>
+                  <p className="text-gray-700">{auth.user?.fullName}</p>
                 </div>
                 <div className="flex">
                   <p className="w-[9rem]">Date of Birth :</p>
@@ -61,7 +67,7 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <Card className="w-full  bg-gray-200">
             <CardHeader className="pb-7">
               <div className="flex item-center gap-3">
@@ -79,21 +85,21 @@ const Profile = () => {
               <div>
                 <Dialog>
                   <DialogTrigger>
-                      <Button>
-                        Enable Two Step Verification
-                      </Button>
+                    <Button>Enable Two Step Verification</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Verify your account</DialogTitle>
-                      <AccountVarificationForm handleSubmit={handleEnableTwoStepVerification}/>
+                      <AccountVarificationForm
+                        handleSubmit={handleEnableTwoStepVerification}
+                      />
                     </DialogHeader>
                   </DialogContent>
                 </Dialog>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -1,16 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { withdrawalRequest } from "@/State/Withdrawal/Action";
 import { DialogClose } from "@radix-ui/react-dialog";
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 const WithdrawalForm = () => {
   const [amount, setAmount] = React.useState("");
+  const dispatch = useDispatch();
+  const { wallet ,withdrawal} = useSelector((store) => store);
 
   const handleChange = (e) => {
     setAmount(e.target.value);
   };
 
   const handleSubmit = () => {
+    dispatch(withdrawalRequest({amount,jwt:localStorage.getItem("jwt")}))
     console.log("Withdrawal Amount:", amount);
   };
 
@@ -19,7 +24,7 @@ const WithdrawalForm = () => {
       {/* Available Balance */}
       <div className="flex justify-between items-center rounded-md bg-card border border-border shadow-sm text-xl font-bold px-5 py-4">
         <p>Available Balance</p>
-        <p>$9000</p>
+        <p>${wallet.userWallet?.balance}</p>
       </div>
 
       {/* Withdrawal Input */}
@@ -46,8 +51,12 @@ const WithdrawalForm = () => {
           />
 
           <div className="flex flex-col">
-            <p className="text-lg font-semibold">Yes Bank</p>
-            <p className="text-xs text-muted-foreground">**********1651</p>
+            <p className="text-lg font-semibold">
+              {withdrawal.paymentDetails?.bankName}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {withdrawal.paymentDetails?.accountNumber}
+            </p>
           </div>
         </div>
       </div>

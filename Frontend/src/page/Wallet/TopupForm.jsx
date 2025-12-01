@@ -4,13 +4,23 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import { Button } from "@/components/ui/button";
+import { useDispatch } from "react-redux";
+import { paymentHandler } from "@/State/Wallet/Action";
 
 const TopupForm = () => {
   const [amount, setAmount] = React.useState("");
   const [paymentMethod, setPaymentMethod] = React.useState("RAZORPAY");
+  const dispatch = useDispatch();
+
+
+
   const handleSubmit = () => {
     console.log("Amount:", amount);
     console.log("Payment Method:", paymentMethod);
+    dispatch(paymentHandler({jwt:localStorage.getItem("jwt"),
+      paymentMethod,
+      amount
+    }))
   }
 
   return (

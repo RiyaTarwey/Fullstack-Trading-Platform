@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Table,
@@ -9,8 +9,17 @@ import {
   TableRow,
   TableCell,
 } from "../../components/ui/table";
+import { useDispatch, useSelector } from 'react-redux';
+import { getWithdrawalHistory } from '@/State/Withdrawal/Action';
 
 const Withdrawal = () => {
+  const dispatch = useDispatch();
+  const { wallet, withdrawal } = useSelector((store) => store);
+
+  useEffect(()=>{
+    dispatch(getWithdrawalHistory(localStorage.getItem("jwt")))
+  },[])
+
   return (
     <div>
       <div>
@@ -27,17 +36,17 @@ const Withdrawal = () => {
             </TableHeader>
 
             <TableBody>
-              {[1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, index) => (
+              {withdrawal.history.map((item, index) => (
                 <TableRow key={index}>
                   <TableCell>
-                    <p>June 2, 2026 at 11:43</p>
+                    <p>{item.date.toString()}</p>
                   </TableCell>
 
                   <TableCell className=" ">Bank</TableCell>
 
-                  <TableCell className=" ">$69249</TableCell>
+                  <TableCell className=" ">${item.amount}</TableCell>
 
-                  <TableCell className="text-right">345</TableCell>
+                  <TableCell className="text-right">{item.status}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

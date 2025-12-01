@@ -7,8 +7,8 @@ import {
   AvatarFallback,
 } from "../../components/ui/avatar";
 
-import { Button } from "../../components/ui/button"; // named export
-import Sidebar from "./Sidebar"; // keep your structure
+import { Button } from "../../components/ui/button";
+import Sidebar from "./Sidebar";
 
 import {
   Sheet,
@@ -19,9 +19,13 @@ import {
   SheetDescription,
 } from "../../components/ui/sheet";
 
-import { DragHandleHorizontalIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { DragHandleHorizontalIcon } from "@radix-ui/react-icons";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
+  const { auth } = useSelector((store) => store);
+
   return (
     <div className="px-2 py-3 border-b z-50 bg-background bg-opacity-0 sticky top-0 left-0 right-0 flex justify-between items-center">
       <div className="flex items-center gap-3">
@@ -36,7 +40,6 @@ const Navbar = () => {
             </Button>
           </SheetTrigger>
 
-          {/* changed justify-center -> justify-start */}
           <SheetContent
             className="w-72 border-r-0 flex flex-col justify-start"
             side="left"
@@ -49,7 +52,7 @@ const Navbar = () => {
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   <div>
-                    <span className="font-bold text-orange-700">Crypto</span>
+                    <span className="font-bold text-orange-700 ">Crypto</span>
                     <span>Trade</span>
                   </div>
                 </div>
@@ -63,20 +66,30 @@ const Navbar = () => {
             <Sidebar />
           </SheetContent>
         </Sheet>
-        <p className="p-0 ml-9">
-          <span className="font-bold text-orange-700">Crypto</span>
-          <span>Trade</span>
-        </p>
-        <div className="p-0 ml-9">
-          <Button className="flex items-center gap-3 bg-white text-black border border-gray-300 rounded-full cursor-pointer">
-            <MagnifyingGlassIcon />
-            <span>Search</span>
-          </Button>
-        </div>
+
+        {/* 🔥 Bigger Premium CryptoTrade text */}
+        <Link
+          to="/"
+          className="p-0 ml-2 cursor-pointer flex items-center gap-3"
+        >
+          <img
+            src="https://cdn.pixabay.com/photo/2022/12/26/11/37/crypto-7678815_1280.jpg"
+            alt="logo"
+            className="h-10 w-10 rounded-full object-cover"
+          />
+
+          <div className="text-3xl font-extrabold tracking-wider flex items-center">
+            <span className="text-orange-700">Crypto</span>
+            <span>Trade</span>
+          </div>
+        </Link>
       </div>
+
       <div>
         <Avatar className="bg-gray-500">
-          <AvatarFallback>C</AvatarFallback>
+          <AvatarFallback>
+            {auth.user?.fullName[0].toUpperCase()}
+          </AvatarFallback>
         </Avatar>
       </div>
     </div>

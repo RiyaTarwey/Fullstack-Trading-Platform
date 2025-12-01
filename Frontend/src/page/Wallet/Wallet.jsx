@@ -1,3 +1,4 @@
+// src/pages/WalletPage.jsx (or wherever you keep it)
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -12,9 +13,89 @@ import TopupForm from "./TopupForm";
 import WithdrawalForm from "./WithdrawalForm";
 import TransferForm from "./TransferForm";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-    
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useCallback } from "react";
+import {
+  depositMoney,
+  getUserWallet,
+  getWalletTransactions,
+} from "@/State/Wallet/Action";
+import { useLocation, useNavigate } from "react-router-dom";
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 
 export default function WalletPage() {
+  const dispatch = useDispatch();
+  const wallet = useSelector((state) => state.wallet);
+  const query = useQuery();
+  const orderId = query.get("order_id");
+  const paymentId = query.get("payment_id");
+  const razorpayPaymentId = query.get("razorpay_payment_id");
+  const navigate = useNavigate();
+
+  // fetchers
+  const handleFetchUserWallet = useCallback(() => {
+    const jwt = localStorage.getItem("jwt");
+    if (jwt) dispatch(getUserWallet(jwt));
+  }, [dispatch]);
+
+  const handleFetchWalletTransactions = useCallback(() => {
+    const jwt = localStorage.getItem("jwt");
+    if (jwt) dispatch(getWalletTransactions(jwt));
+  }, [dispatch]);
+
+  // on mount fetch wallet & transactions
+  useEffect(() => {
+    handleFetchUserWallet();
+    handleFetchWalletTransactions();
+  }, [handleFetchUserWallet, handleFetchWalletTransactions]);
+
+  // handle deposit callback params from query
+  useEffect(() => {
+    if (orderId) {
+      dispatch(
+        depositMoney({
+          jwt: localStorage.getItem("jwt"),
+          orderId,
+          paymentId: razorpayPaymentId || paymentId,
+          navigate,
+        })
+      );
+    }
+    // if you want to refresh transactions after deposit, you can fetch them here:
+    // handleFetchWalletTransactions();
+  }, [orderId, paymentId, razorpayPaymentId, dispatch, navigate]);
+
+  // copy helper
+  function copyToClipboard(text) {
+    if (!text) return;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => console.log("Text copied to clipboard!"))
+        .catch((err) => console.error("Failed to copy text: ", err));
+      return;
+    }
+
+    // fallback
+    const el = document.createElement("textarea");
+    el.value = text;
+    el.setAttribute("readonly", "");
+    el.style.position = "absolute";
+    el.style.left = "-9999px";
+    document.body.appendChild(el);
+    el.select();
+    try {
+      document.execCommand("copy");
+      console.log("Text copied (fallback)!");
+    } catch (err) {
+      console.error("Fallback: Oops, unable to copy", err);
+    }
+    document.body.removeChild(el);
+  }
+
   return (
     <div className="flex flex-col items-center bg-gray-100 min-h-screen">
       <div className="pt-10 w-full lg:w-[60%]">
@@ -28,8 +109,11 @@ export default function WalletPage() {
                     My Wallet
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <p className="text-gray-600 text-sm">#A475Ed</p>
+                    <p className="text-gray-600 text-sm">
+                      #{wallet?.userWallet?.id ?? "N/A"}
+                    </p>
                     <Copy
+                      onClick={() => copyToClipboard(wallet?.userWallet?.id)}
                       size={12}
                       className="cursor-pointer text-slate-600 hover:text-slate-900"
                     />
@@ -38,14 +122,20 @@ export default function WalletPage() {
               </div>
             </div>
 
-            <ReloadIcon className="w-6 h-6 text-slate-700 hover:text-slate-900 cursor-pointer absolute top-5 right-5" />
+            <ReloadIcon
+              onClick={() => {
+                handleFetchUserWallet();
+                handleFetchWalletTransactions();
+              }}
+              className="w-6 h-6 text-slate-700 hover:text-slate-900 cursor-pointer absolute top-5 right-5"
+            />
           </CardHeader>
 
           <CardContent>
             <div className="flex items-center gap-2">
               <DollarSign className="text-slate-700" />
               <span className="text-2xl font-semibold text-slate-800">
-                2000
+                {wallet?.userWallet?.balance ?? 0}
               </span>
             </div>
 
@@ -69,6 +159,7 @@ export default function WalletPage() {
                   <TopupForm />
                 </DialogContent>
               </Dialog>
+
               <Dialog>
                 <DialogTrigger>
                   <div
@@ -88,6 +179,7 @@ export default function WalletPage() {
                   <WithdrawalForm />
                 </DialogContent>
               </Dialog>
+
               <Dialog>
                 <DialogTrigger>
                   <div
@@ -110,35 +202,49 @@ export default function WalletPage() {
             </div>
           </CardContent>
         </Card>
+
         <div className="py-5 pt-10">
           <div className="flex gap-2 items-center pb-5">
-            <h1 className="text-2xl font font-semibold">History</h1>
-            <UpdateIcon className="w-7 h-7 p-0 cursor-pointer hover:text-gray-400" />
+            <h1 className="text-2xl font-semibold">History</h1>
+            <UpdateIcon
+              onClick={handleFetchWalletTransactions}
+              className="p-0 h-7 w-7 cursor-pointer hover:text-gray-400"
+            />
           </div>
 
           <div className="space-y-5">
-            {[1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, i) => (
-              <div key={i}>
-                <Card className=" px-5 flex justify-between p-2">
-                  <div>
+            {wallet?.transactions?.length ? (
+              wallet.transactions.map((item, index) => (
+                <div key={index}>
+                  <Card className="lg:w-[50] px-5 py-2 flex justify-between ">
                     <div className="flex items-center gap-5">
                       <Avatar>
                         <AvatarFallback>
-                          <ShuffleIcon className="" />
+                          <ShuffleIcon />
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-1">
-                        <h1>Buy Asset</h1>
-                        <p className="text-sm text-gray-500">2024-06-02</p>
+                        <h1>{item.type || item.purpose}</h1>
+                        <p className="text-sm text-gray-500">{item.date}</p>
                       </div>
                     </div>
-                    <div className="text-right w-full">
-                      <p className="text-green-500">500 USD</p>
+                    <div className="flex items-center justify-end w-full">
+                      <span
+                        className={`text-lg font-semibold ${
+                          Number(item.amount) > 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {item.amount} USD
+                      </span>
                     </div>
-                  </div>
-                </Card>
-              </div>
-            ))}
+                  </Card>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No transactions yet.</p>
+            )}
           </div>
         </div>
       </div>

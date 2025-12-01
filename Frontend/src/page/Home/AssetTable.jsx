@@ -1,40 +1,69 @@
-import { Avatar, AvatarImage } from '@radix-ui/react-avatar';
-import{ Table, TableCaption, TableHead, TableHeader, TableBody, TableRow, TableCell } from '../../components/ui/table'
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Table,
+  TableCaption,
+  TableHead,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "../../components/ui/table";
+import React, { useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const AssetTable = () => {
-  const navigate= useNavigate()
+const AssetTable = React.memo(({ coin = [], category }) => {
+  const navigate = useNavigate();
+
+  const onRowClick = useCallback(
+    (id) => () => {
+      navigate(`/market/${id}`);
+    },
+    [navigate]
+  );
+
+  const rows = useMemo(() => {
+    const list = Array.isArray(coin) ? coin : [];
+    return list.map((item) => (
+      <TableRow key={item.id}>
+        <TableCell
+          onClick={onRowClick(item.id)}
+          className="font-medium flex items-center gap-2"
+        >
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={item.image} />
+            <AvatarFallback>
+              {item.symbol?.slice(0, 3)?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span>{item.name}</span>
+        </TableCell>
+        <TableCell>{item.symbol}</TableCell>
+        <TableCell>{item.total_volume}</TableCell>
+        <TableCell>{item.market_cap}</TableCell>
+        <TableCell>{item.price_change_percentage_24h}</TableCell>
+        <TableCell className="text-right">{item.current_price}</TableCell>
+      </TableRow>
+    ));
+  }, [coin, onRowClick]);
+
   return (
     <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">COIN</TableHead>
-          <TableHead>SYMBOL</TableHead>
-          <TableHead>VOLUME</TableHead>
-          <TableHead>MARKET CAP</TableHead>
-          <TableHead>24h</TableHead>
-          <TableHead className="text-right">PRICE</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {[1,1,1,1,1,1,1,1,1,1].map((item, index)=>(  <TableRow key={index}>
-          <TableCell onClick={()=>navigate('/market/bitcoin')} className="font-medium flex items-center gap-2">
-            <Avatar className="-z-50">
-              <AvatarImage src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHGIbDs9XnVLYl1uGN2BRE_Y24DF0JsUXgoA&s" />
-            </Avatar>
-            <span>Bitcoin</span>
-          </TableCell>
-          <TableCell>BTC</TableCell>
-          <TableCell>9124463121</TableCell>
-          <TableCell>1364881428323</TableCell>
-          <TableCell>-0.20009</TableCell>
-          <TableCell className="text-right">$69249</TableCell>
-        </TableRow>))}
-  
-      </TableBody>
+      <ScrollArea className={`${category === "all" ? "h-[77vh]" : "[h-82vh]"}`}>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">COIN</TableHead>
+            <TableHead>SYMBOL</TableHead>
+            <TableHead>VOLUME</TableHead>
+            <TableHead>MARKET CAP</TableHead>
+            <TableHead>24h</TableHead>
+            <TableHead className="text-right">PRICE</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>{rows}</TableBody>
+      </ScrollArea>
     </Table>
   );
-}
+});
 
-export default AssetTable
+export default AssetTable;

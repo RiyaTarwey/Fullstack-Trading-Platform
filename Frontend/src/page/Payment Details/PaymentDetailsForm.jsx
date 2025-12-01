@@ -12,12 +12,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { useDispatch } from "react-redux";
+import { addPaymentDetails } from "@/State/Withdrawal/Action";
 
 const PaymentDetailsForm = () => {
+  const diapatch = useDispatch();
+
   const form = useForm({
     defaultValues: {
       accountHolderName: "",
-      ifscCode: "",
+      ifsc: "",
       accountNumber: "",
       confirmAccountNumber: "",
       bankName: "",
@@ -25,6 +29,12 @@ const PaymentDetailsForm = () => {
   });
 
   const onSubmit = (data) => {
+    diapatch(
+      addPaymentDetails({
+        paymentDetails: data,
+        jwt: localStorage.getItem("jwt"),
+      })
+    );
     console.log(data);
   };
 
@@ -39,6 +49,7 @@ const PaymentDetailsForm = () => {
           <FormField
             control={form.control}
             name="accountHolderName"
+            rules={{ required: "*Required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-medium text-slate-700">
@@ -59,7 +70,8 @@ const PaymentDetailsForm = () => {
           {/* IFSC */}
           <FormField
             control={form.control}
-            name="ifscCode"
+            name="ifsc"
+            rules={{ required: "*Required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-medium text-slate-700">
@@ -81,6 +93,7 @@ const PaymentDetailsForm = () => {
           <FormField
             control={form.control}
             name="accountNumber"
+            rules={{ required: "*Required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-medium text-slate-700">
@@ -102,6 +115,7 @@ const PaymentDetailsForm = () => {
           <FormField
             control={form.control}
             name="confirmAccountNumber"
+            rules={{ required: "*Required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-medium text-slate-700">
@@ -123,6 +137,7 @@ const PaymentDetailsForm = () => {
           <FormField
             control={form.control}
             name="bankName"
+            rules={{ required: "*Required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-medium text-slate-700">

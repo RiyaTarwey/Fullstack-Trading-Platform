@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Table,
@@ -11,11 +11,24 @@ import {
 } from "../../components/ui/table";
 import { Button } from "../../components/ui/button";
 import { BookmarkFilledIcon } from "@radix-ui/react-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserWatchlist, addItemToWatchlist } from "@/State/Watchlist/Action";
+import { existInWatchlist } from "@/utils/ExistsinWatchlist";
 
 const Watchlist = () => {
+  const watchlist = useSelector((state) => state.watchlist);
+  const dispatch = useDispatch();
+
   const handleRemoveToWatchlist = (value) => {
+    dispatch(
+      addItemToWatchlist({ coinId: value, jwt: localStorage.getItem("jwt") })
+    );
     console.log(value);
   };
+
+  useEffect(() => {
+    dispatch(getUserWatchlist(localStorage.getItem("jwt")));
+  }, [dispatch]);
 
   return (
     <div>
@@ -33,24 +46,21 @@ const Watchlist = () => {
               <TableHead className="text-right text-red-600">Remove</TableHead>
             </TableRow>
           </TableHeader>
-
           <TableBody>
-            {[1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, index) => (
+            {(watchlist?.items || []).map((item, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium flex items-center gap-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHGIbDs9XnVLYl1uGN2BRE_Y24DF0JsUXgoA&s" />
-                    <AvatarFallback>BTC</AvatarFallback>
+                    <AvatarImage src={item.image} />
+                    <AvatarFallback>{item.symbol}</AvatarFallback>
                   </Avatar>
-                  <span>Bitcoin</span>
+                  <span>{item.name}</span>
                 </TableCell>
-
-                <TableCell>BTC</TableCell>
-                <TableCell>9124463121</TableCell>
-                <TableCell>1364881428323</TableCell>
-                <TableCell>-0.20009</TableCell>
-                <TableCell>$69249</TableCell>
-
+                <TableCell>{item.symbol}</TableCell>
+                <TableCell>{item.total_volume}</TableCell>
+                <TableCell>{item.market_cap}</TableCell>
+                <TableCell>{item.price_change_percentage_24h}</TableCell>
+                <TableCell>${item.current_price}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="ghost"

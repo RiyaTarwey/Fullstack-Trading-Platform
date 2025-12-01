@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Table,
@@ -11,7 +11,17 @@ import {
 } from "../../components/ui/table";
 import { Button } from "../../components/ui/button";
 import { BookmarkFilledIcon } from "@radix-ui/react-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllOrdersForUser } from "@/State/Order/Action";
+import { calculateProfit } from "@/utils/CalculateProfit";
 const Activity = () => {
+  const dispatch=useDispatch()
+  const {order}=useSelector(store=>store)
+
+
+  useEffect(()=>{
+    dispatch(getAllOrdersForUser({jwt:localStorage.getItem('jwt')}))
+  },[])
   return (
     <div>
       <div className="p-5 lg:p-20">
@@ -30,25 +40,32 @@ const Activity = () => {
           </TableHeader>
 
           <TableBody>
-            {[1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((item, index) => (
+            {order.orders.map((item, index) => (
               <TableRow key={index}>
                 <TableCell>
-                  <p>12-09-2023</p>
-                  <p className="text-gray-400">04:23:45 PM</p>
+                  <p>{new Date(item.timestamp).toLocaleDateString("en-GB")}</p>
+                  <p className="text-gray-400">
+                    {new Date(item.timestamp).toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: true,
+                    })}
+                  </p>
                 </TableCell>
                 <TableCell className="font-medium flex items-center gap-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHGIbDs9XnVLYl1uGN2BRE_Y24DF0JsUXgoA&s" />
+                    <AvatarImage src={item.orderItem.coin.image} />
                     <AvatarFallback>BTC</AvatarFallback>
                   </Avatar>
-                  <span>Bitcoin</span>
+                  <span>{item.orderItem.coin.name}</span>
                 </TableCell>
-                <TableCell>BTC</TableCell>
-                <TableCell>1364881428323</TableCell>
-                <TableCell>-0.20009</TableCell>
-                <TableCell>$69249</TableCell>
+                <TableCell>{item.orderItem.buyPrice}</TableCell>
+                <TableCell>{item.orderItem.sellPrice}</TableCell>
+                <TableCell>{item.orderType}</TableCell>
+                <TableCell>{calculateProfit(item)}</TableCell>
 
-                <TableCell className="text-right">345</TableCell>
+                <TableCell className="text-right">{item.price}</TableCell>
               </TableRow>
             ))}
           </TableBody>
