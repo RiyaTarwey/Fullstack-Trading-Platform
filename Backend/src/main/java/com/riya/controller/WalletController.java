@@ -1,5 +1,6 @@
 package com.riya.controller;
 
+import com.riya.domain.WalletTransactionType;
 import com.riya.modal.*;
 import com.riya.response.PaymentResponse;
 import com.riya.service.*;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 public class WalletController {
@@ -19,6 +21,9 @@ public class WalletController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private WalletTransactionService walletTransactionService;
 
     @Autowired
     private OrderService orderService;
@@ -40,12 +45,19 @@ public class WalletController {
             @PathVariable Long walletId,
             @RequestBody WalletTransaction req)
             throws Exception {
-        User senderUser = userService.findUserProfileByJwt(jwt);
-        Wallet receiverWallet = walletService.findWalletById(walletId);
-        Wallet wallet= walletService.walletToWalletTransfer(
-                senderUser,
-                receiverWallet,
-                req.getAmount());
+        User senderUser =userService.findUserProfileByJwt(jwt);
+
+
+        Wallet reciverWallet = walletService.findWalletById(walletId);
+
+        Wallet wallet = walletService.walletToWalletTransfer(senderUser,reciverWallet, req.getAmount());
+        WalletTransaction walletTransaction=walletTransactionService.createTransaction(
+                wallet,
+                WalletTransactionType.WALLET_TRANSFER,reciverWallet.getId().toString(),
+                req.getPurpose(),
+                -req.getAmount()
+        );
+
 
         return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
     }
@@ -64,11 +76,11 @@ public class WalletController {
         return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
     }
 
-    @PutMapping("/api/wallet/order/deposit")
+    @PutMapping("/api/wallet/deposit")
     public ResponseEntity<Wallet> addBalanceToWallet(
             @RequestHeader("Authorization") String jwt,
             @RequestParam(name="order_id")Long orderId,
-            @RequestParam(name="Payment_id") String paymentId)
+            @RequestParam(name="payment_id") String paymentId)
             throws Exception {
         User user = userService.findUserProfileByJwt(jwt);
 
@@ -88,6 +100,17 @@ public class WalletController {
         }
 
         return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
+    }
+    @GetMapping("/api/wallet/transactions")
+    public ResponseEntity<List<WalletTransaction>> getWalletTransaction(
+            @RequestHeader("Authorization")String jwt) throws Exception {
+        User user=userService.findUserProfileByJwt(jwt);
+
+        Wallet wallet = walletService.getUserWallet(user);
+
+        List<WalletTransaction> transactions=walletTransactionService.getTransactions(wallet,null);
+
+        return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
 }
