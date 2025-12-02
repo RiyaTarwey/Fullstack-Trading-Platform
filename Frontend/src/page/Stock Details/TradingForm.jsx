@@ -10,8 +10,11 @@ import { useDispatch, useSelector } from "react-redux";
 
 const TradingForm = () => {
   const [orderType, setOrderType] = useState("BUY");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("");
   const [quantity, setQuantity] = useState(0);
+
+  // success message state
+  const [successMsg, setSuccessMsg] = useState("");
 
   const { coin, wallet, asset } = useSelector((store) => store);
   const dispatch = useDispatch();
@@ -22,7 +25,10 @@ const TradingForm = () => {
     const amt = Number(e.target.value);
     setAmount(amt);
 
-    if (!price) return;
+    if (!price) {
+      setQuantity(0);
+      return;
+    }
 
     let qty = amt / price;
     setQuantity(qty > 0 ? qty : 0);
@@ -39,7 +45,8 @@ const TradingForm = () => {
   const handleSubmitOrder = () => {
     if (insufficientBuy || insufficientSell) return;
 
-    dispatch(
+    // dispatch the action
+    const dispatched = dispatch(
       payOrder({
         jwt: localStorage.getItem("jwt"),
         amount,
@@ -50,6 +57,38 @@ const TradingForm = () => {
         },
       })
     );
+
+    // handle both promise and non-promise returns from dispatch
+    if (dispatched && typeof dispatched.then === "function") {
+      dispatched
+        .then(() => {
+          if (orderType === "BUY") {
+            setSuccessMsg("Purchase Successful!");
+          } else {
+            setSuccessMsg("Sell Successful!");
+          }
+
+          setAmount(0);
+          setQuantity(0);
+
+          setTimeout(() => setSuccessMsg(""), 3000);
+        })
+        .catch(() => {
+          // optionally handle failure (kept minimal intentionally)
+        });
+    } else {
+      // optimistic: if dispatch didn't return a promise, show success immediately
+      if (orderType === "BUY") {
+        setSuccessMsg("Purchase Successful!");
+      } else {
+        setSuccessMsg("Sell Successful!");
+      }
+
+      setAmount(0);
+      setQuantity(0);
+
+      setTimeout(() => setSuccessMsg(""), 3000);
+    }
   };
 
   useEffect(() => {
@@ -64,16 +103,36 @@ const TradingForm = () => {
 
   return (
     <div className="space-y-10 p-5">
+      {/* SUCCESS MESSAGE */}
+      {successMsg && (
+        <div className="p-3 text-center text-green-700 font-semibold bg-green-100 rounded-md">
+          {successMsg}
+        </div>
+      )}
+
       {/* ===== AMOUNT INPUT + QUANTITY DISPLAY ===== */}
       <div>
         <div className="flex gap-4 items-center justify-between">
           <Input
             className="py-7 focus:outline-none"
             placeholder="Enter Amount...."
-            onChange={handleChange}
+            onChange={(e) => {
+              const amt = e.target.value;
+              setAmount(amt);
+
+              if (!price || amt === "") {
+                setQuantity(0);
+                return;
+              }
+
+              let qty = Number(amt) / price;
+              setQuantity(qty > 0 ? qty : 0);
+            }}
             type="number"
             name="amount"
+            value={amount}
           />
+
           <div>
             <p className="border text-2xl flex justify-center w-36 h-14 rounded-md items-center">
               {quantity.toFixed(6)}

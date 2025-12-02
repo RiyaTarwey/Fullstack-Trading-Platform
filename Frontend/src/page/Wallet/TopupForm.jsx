@@ -36,7 +36,7 @@ const TopupForm = () => {
       </div>
 
       <div>
-        <h1 className="pb-1 text-foreground">Select payment method</h1>
+        <h1 className="pb-1 text-foreground">Payment method</h1>
 
         <RadioGroup.Root
           className="flex"
@@ -62,7 +62,7 @@ const TopupForm = () => {
               </div>
             </Label>
           </div>
-          <div className="flex items-center space-x-3 border border-border bg-card p-3 px-5 rounded-md shadow-sm">
+          {/* <div className="flex items-center space-x-3 border border-border bg-card p-3 px-5 rounded-md shadow-sm">
             <RadioGroup.Item
               className="h-9 w-9 rounded-full border border-border flex items-center justify-center bg-background"
               value="STRIPE"
@@ -80,7 +80,7 @@ const TopupForm = () => {
                 />
               </div>
             </Label>
-          </div>
+          </div> */}
         </RadioGroup.Root>
       </div>
       <Button  onClick={handleSubmit} className="w-full py-7">Submit</Button>

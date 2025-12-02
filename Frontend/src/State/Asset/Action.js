@@ -42,6 +42,7 @@ export const getAssetDetails =
         payload: response.data,
       });
     } catch (error) {
+      console.log("user assets ---",error.message)
       dispatch({
         type: types.GET_ASSET_DETAILS_FAILURE,
         error: error.message,

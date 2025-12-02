@@ -48,11 +48,11 @@ const Profile = () => {
               <div className="space-y-7">
                 <div className="flex">
                   <p className="w-[9rem]">Address :</p>
-                  <p className="text-gray-700">Ranchi</p>
+                  <p className="text-gray-700">Patia</p>
                 </div>
                 <div className="flex">
                   <p className="w-[9rem]">City : </p>
-                  <p className="text-gray-700">BBS</p>
+                  <p className="text-gray-700">Bhubneshwar</p>
                 </div>
                 <div className="flex">
                   <p className="w-[9rem]">Postcode :</p>
@@ -67,7 +67,7 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* <div className="mt-6">
+        <div className="mt-6">
           <Card className="w-full  bg-gray-200">
             <CardHeader className="pb-7">
               <div className="flex item-center gap-3">
@@ -99,7 +99,7 @@ const Profile = () => {
               </div>
             </CardContent>
           </Card>
-        </div> */}
+        </div>
       </div>
     </div>
   );
