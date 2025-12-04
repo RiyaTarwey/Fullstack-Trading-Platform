@@ -92,7 +92,7 @@ public class PaymentServiceImpl implements PaymentService {
             RazorpayClient razorpay = new RazorpayClient(apiKey, apiSecretKey);
 
             JSONObject paymentLinkRequest = new JSONObject();
-            paymentLinkRequest.put("amount",amount);
+            paymentLinkRequest.put("amount",Amount);
             paymentLinkRequest.put("currency","INR");
 
 

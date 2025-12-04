@@ -99,6 +99,7 @@ public class WalletController {
             wallet=walletService.addBalance(wallet,order.getAmount());
         }
 
+
         return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
     }
     @GetMapping("/api/wallet/transactions")
